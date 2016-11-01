@@ -2,7 +2,8 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.App as App
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onInput)
 
 
 -- MAIN
@@ -67,8 +68,16 @@ viewPokemon p =
         [ h2 [] [ text ("Pokemon: " ++ p.name) ]
         , ul []
             [ li [] [ text p.name ]
-            , li [] [ text (toString p.headCount) ]
+            , li [] [ headCountInput p ]
             , li [] [ text ("Cost: " ++ toString p.evolveCost) ]
             ]
         ]
 
+
+headCountInput : Pokemon -> Html a
+headCountInput p =
+    input
+        [ type' "number"
+        , value <| toString p.headCount
+        ]
+        []
