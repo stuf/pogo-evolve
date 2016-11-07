@@ -28,6 +28,7 @@ type alias Entry =
 
 type alias Model =
     { entries : List Entry
+    , entryToCreate : Entry
     }
 
 
@@ -35,7 +36,9 @@ init : ( Model, Cmd a )
 init =
     ( { entries = [ Entry "Entry name" 10 102 12
                   , Entry "Another entry name" 5 30 25
-                  ] }, Cmd.none )
+                  ]
+      , entryToCreate = Entry "" 0 0 0
+      }, Cmd.none )
 
 
 -- UPDATE
@@ -105,6 +108,8 @@ viewEntryTable entries =
             , th [] [ text "Head count" ]
             , th [] [ text "Candy" ]
             , th [] [ text "Cost" ]
+            , th [] [ text "Maximum e's" ]
+            , th [] [ text "Possible e's" ]
             ]
         , tbody [] (List.map viewEntry entries)
         ]
@@ -112,16 +117,27 @@ viewEntryTable entries =
 
 viewEntry : Entry -> Html a
 viewEntry entry =
-    tr 
-        []
-        [ td [] [ text entry.name ]
-        , td [] [ text (toString entry.headCount) ]
-        , td [] [ text (toString entry.candy) ]
-        , td [] [ text (toString entry.evolveCost) ]
-        ]
+    let
+        maximumEvos : Int
+        maximumEvos =
+            entry.candy // entry.headCount
+        
+        -- possibleEvos : Int
+        -- possibleEvos =
+        --     List.minimum
+    in
+        tr 
+            []
+            [ td [] [ text entry.name ]
+            , td [] [ text (toString entry.headCount) ]
+            , td [] [ text (toString entry.candy) ]
+            , td [] [ text (toString entry.evolveCost) ]
+            , td [] [ text (toString maximumEvos) ]
+            -- , td [] [ text (toString possibleEvos) ]
+            ]
 
 
--- TODO How to construct a record from multiple form fields
+-- TODO How to construct a record from multiple form fields (databinding)
 viewAddEntry : Html a
 viewAddEntry =
     div []
