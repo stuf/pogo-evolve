@@ -58,8 +58,6 @@ init =
 type Msg
     = NoOp
     | CreateEntry Entry
-    | UpdateHeadCount String Int
-    | UpdateCandyCount String Int
     | UpdateFormState FormField String
     | CreateFromForm
 
@@ -81,14 +79,6 @@ update msg model =
             ( { model
               | entries = entry :: model.entries
               }, Cmd.none )
-        
-        UpdateHeadCount name count ->
-            ( { model
-              | entries = List.map (updateHeadCount name count) model.entries
-              }, Cmd.none )
-        
-        UpdateCandyCount name count ->
-            ( model, Cmd.none )
         
         UpdateFormState field value ->
             let
