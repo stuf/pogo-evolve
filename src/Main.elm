@@ -2,7 +2,9 @@ module Main exposing (main)
 
 import Html exposing (..)
 import Html.App as App
-import Html.Attributes exposing (class, style, type')
+import Html.Events exposing (onInput, onClick)
+import Html.Attributes exposing (class, style, type', value, placeholder)
+import String exposing (toInt)
 
 -- MAIN
 
@@ -28,17 +30,27 @@ type alias Entry =
 
 type alias Model =
     { entries : List Entry
-    , entryToCreate : Entry
+    , nameField : String
+    , headCountField : Int
+    , candyField : Int
+    , costField : Int
     }
 
 
 init : ( Model, Cmd a )
 init =
-    ( { entries = [ Entry "Entry name" 10 102 12
-                  , Entry "Another entry name" 5 30 25
-                  ]
-      , entryToCreate = Entry "" 0 0 0
-      }, Cmd.none )
+    (
+        { entries =
+            [ Entry "Entry name" 10 102 12
+            , Entry "Another entry name" 5 30 25
+            ]
+        , nameField = ""
+        , headCountField = 0
+        , candyField = 0
+        , costField = 0
+        }
+    , Cmd.none
+    )
 
 
 -- UPDATE
@@ -48,6 +60,15 @@ type Msg
     | CreateEntry Entry
     | UpdateHeadCount String Int
     | UpdateCandyCount String Int
+    | UpdateFormState FormField String
+    | CreateFromForm
+
+
+type FormField
+    = Name
+    | HeadCount
+    | Candy
+    | Cost
 
 
 update : Msg -> Model -> ( Model, Cmd a )
@@ -68,6 +89,41 @@ update msg model =
         
         UpdateCandyCount name count ->
             ( model, Cmd.none )
+        
+        UpdateFormState field value ->
+            let
+                model' =
+                    case field of
+                        HeadCount ->
+                            { model | entries = List.map (updateHeadCount "headCount" (getInt value)) model.entries }
+
+                        Cost -> model
+                        _ -> model 
+            in
+                ( model', Cmd.none )
+
+        CreateFromForm ->
+            let
+                entry =
+                    Entry
+                        model.nameField
+                        model.headCountField
+                        model.candyField
+                        model.costField
+            in
+                ( { model
+                  | entries = entry :: model.entries
+                  , nameField = ""
+                  , headCountField = 0
+                  , candyField = 0
+                  }, Cmd.none )
+
+
+getInt : String -> Int
+getInt value =
+    case toInt value of
+        Ok value' -> value'
+        Err _ -> 0
 
 
 updateHeadCount : String -> Int -> Entry -> Entry
@@ -80,14 +136,19 @@ updateCandyCount name count entry =
     if entry.name == name then { entry | candy = count } else entry
 
 
+updateCost : String -> Int -> Entry -> Entry
+updateCost name cost entry =
+    if entry.name == name then { entry | evolveCost = cost } else entry
+
+
 -- VIEW
 
-view : Model -> Html a
+view : Model -> Html Msg
 view model =
     div
         [ style [ ( "border", "solid 1px #f00" ) ] ]
         [ viewEntries model.entries
-        , viewAddEntry
+        , viewAddEntry model
         ]
 
 
@@ -122,9 +183,9 @@ viewEntry entry =
         maximumEvos =
             entry.candy // entry.headCount
         
-        -- possibleEvos : Int
-        -- possibleEvos =
-        --     List.minimum
+        possibleEvos : Int
+        possibleEvos =
+            0
     in
         tr 
             []
@@ -133,30 +194,57 @@ viewEntry entry =
             , td [] [ text (toString entry.candy) ]
             , td [] [ text (toString entry.evolveCost) ]
             , td [] [ text (toString maximumEvos) ]
-            -- , td [] [ text (toString possibleEvos) ]
+            , td [] [ text (toString possibleEvos) ]
             ]
 
 
--- TODO How to construct a record from multiple form fields (databinding)
-viewAddEntry : Html a
-viewAddEntry =
+viewAddEntry : Model -> Html Msg
+viewAddEntry model =
     div []
         [ h3 [] [ text "Create entry" ]
         , form []
             [ div []
                 [ label [] [ text "Name" ]
-                , input [ type' "text" ] []
+                , input
+                    [ type' "text"
+                    , onInput (UpdateFormState Name)
+                    , value model.nameField
+                    , placeholder "Name"
+                    ] []
                 ]
             , div []
                 [ label [] [ text "Head count" ]
-                , input [ type' "number" ] []
+                , input
+                    [ type' "number"
+                    , onInput (UpdateFormState HeadCount)
+                    , value (toString model.headCountField)
+                    ]
+                    []
                 ]
             , div []
                 [ label [] [ text "Candy count" ]
-                , input [ type' "number" ] []
+                , input
+                    [ type' "number"
+                    , onInput (UpdateFormState Candy)
+                    , value (toString model.candyField) 
+                    ]
+                    []
                 ]
             , div []
-                [ button [] [ text "Create" ]
+                [ label [] [ text "Cost" ]
+                , input
+                    [ type' "number"
+                    , onInput (UpdateFormState Cost)
+                    , value (toString model.costField)
+                    ]
+                    []
+                ]
+            , div []
+                [ button
+                    [ type' "button"
+                    , onClick CreateFromForm
+                    ]
+                    [ text "Create" ]
                 ]
             ]
         ]
