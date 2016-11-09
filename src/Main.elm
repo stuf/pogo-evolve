@@ -81,31 +81,28 @@ update msg model =
               }, Cmd.none )
         
         UpdateFormState field value ->
-            let
-                model' =
-                    case field of
-                        HeadCount ->
-                            { model | entries = List.map (updateHeadCount "headCount" (getInt value)) model.entries }
+            let model' = case field of
+                HeadCount ->
+                    { model
+                    | entries = List.map (updateHeadCount "headCount" (getInt value)) model.entries
+                    }
 
-                        Cost -> model
-                        _ -> model 
+                _ -> model 
             in
                 ( model', Cmd.none )
 
         CreateFromForm ->
             let
+                { nameField, headCountField, candyField, costField } = model
                 entry =
                     Entry
-                        model.nameField
-                        model.headCountField
-                        model.candyField
-                        model.costField
+                        nameField
+                        headCountField
+                        candyField
+                        costField
             in
                 ( { model
                   | entries = entry :: model.entries
-                  , nameField = ""
-                  , headCountField = 0
-                  , candyField = 0
                   }, Cmd.none )
 
 
@@ -197,7 +194,6 @@ viewAddEntry model =
                 [ label [] [ text "Name" ]
                 , input
                     [ type' "text"
-                    , onInput (UpdateFormState Name)
                     , value model.nameField
                     , placeholder "Name"
                     ] []
@@ -207,7 +203,6 @@ viewAddEntry model =
                 , input
                     [ type' "number"
                     , onInput (UpdateFormState HeadCount)
-                    , value (toString model.headCountField)
                     ]
                     []
                 ]
@@ -216,7 +211,6 @@ viewAddEntry model =
                 , input
                     [ type' "number"
                     , onInput (UpdateFormState Candy)
-                    , value (toString model.candyField) 
                     ]
                     []
                 ]
@@ -225,7 +219,6 @@ viewAddEntry model =
                 , input
                     [ type' "number"
                     , onInput (UpdateFormState Cost)
-                    , value (toString model.costField)
                     ]
                     []
                 ]
